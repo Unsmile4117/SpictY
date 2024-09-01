@@ -1,0 +1,50 @@
+local player = game.Players.LocalPlayer
+local character = player.Character
+local camera = workspace.CurrentCamera
+
+local zoomAmount = 0.5 -- Adjust this value to control the zoom level
+local stickDuration = 5 -- Adjust this value to control the duration of sticking
+
+local targetPlayer = game.Players.Player1 -- Replace with the desired target player's name
+
+function zoomIn()
+    camera.FieldOfView = camera.FieldOfView - zoomAmount
+end
+
+function zoomOut()
+    camera.FieldOfView = camera.FieldOfView + zoomAmount
+end
+
+function stickToTarget()
+    if targetPlayer then
+        local targetCharacter = game.Players[targetPlayer].Character
+        if targetCharacter then
+            local direction = (targetCharacter.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Unit
+            local rotation = CFrame.new(0, 0, 0) * CFrame.fromAxis(Vector3.new(0, 1, 0), math.atan2(direction.Z, direction.X))
+            camera.CFrame = camera.CFrame:lerp(rotation, 0.1) -- Adjust the lerp value for smoother rotation
+
+            -- Simulate sticking for 5 seconds
+            local startTime = tick()
+            while tick() - startTime <= stickDuration do
+                -- Keep the camera focused on the target
+                local distance = (targetCharacter.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
+                if distance > 10 then -- Adjust the distance threshold as needed
+                    camera.CFrame = camera.CFrame + direction * (distance - 10)
+                end
+                wait(0.01)
+            end
+        end
+    end
+end
+
+-- Example usage:
+-- To zoom in when a button is pressed:
+local button = script.Parent
+button.MouseButton1Down:Connect(zoomIn)
+
+-- To zoom out when a button is pressed:
+local button2 = script.Parent
+button2.MouseButton1Up:Connect(zoomOut)
+
+-- To stick to the target player:
+game.Heartbeat:Connect(stickToTarget)
