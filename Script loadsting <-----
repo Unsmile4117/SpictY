@@ -1,0 +1,39 @@
+local player = game.Players.LocalPlayer
+local character = player.Character
+local camera = workspace.CurrentCamera
+
+local zoomAmount = 0.5 -- Adjust this value to control the zoom level
+local headMovementSpeed = 0.1 -- Adjust this value to control the speed of head movement
+
+local targetPlayer = nil -- Replace with the target player's name or a way to obtain it
+
+function zoomIn()
+    camera.FieldOfView = camera.FieldOfView - zoomAmount
+end
+
+function zoomOut()
+    camera.FieldOfView = camera.FieldOfView + zoomAmount
+end
+
+function moveHeadToTarget()
+    if targetPlayer then
+        local targetCharacter = game.Players[targetPlayer].Character
+        if targetCharacter then
+            local direction = (targetCharacter.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Unit
+            local rotation = CFrame.new(0, 0, 0) * CFrame.fromAxis(Vector3.new(0, 1, 0), math.atan2(direction.Z, direction.X))
+            camera.CFrame = camera.CFrame:lerp(rotation, headMovementSpeed)
+        end
+    end
+end
+
+-- Example usage:
+-- To zoom in when a button is pressed:
+local button = script.Parent
+button.MouseButton1Down:Connect(zoomIn)
+
+-- To zoom out when a button is pressed:
+local button2 = script.Parent
+button2.MouseButton1Up:Connect(zoomOut)
+
+-- To move the head towards the target player:
+game.Heartbeat:Connect(moveHeadToTarget)
