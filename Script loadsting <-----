@@ -3,9 +3,9 @@ local character = player.Character
 local camera = workspace.CurrentCamera
 
 local zoomAmount = 0.5 -- Adjust this value to control the zoom level
-local headMovementSpeed = 0.1 -- Adjust this value to control the speed of head movement
+local stickDuration = 5 -- Adjust this value to control the duration of sticking
 
-local targetPlayer = nil -- Replace with the target player's name or a way to obtain it
+local targetPlayer = game.Players.Player1 -- Replace with the desired target player's name
 
 function zoomIn()
     camera.FieldOfView = camera.FieldOfView - zoomAmount
@@ -15,13 +15,24 @@ function zoomOut()
     camera.FieldOfView = camera.FieldOfView + zoomAmount
 end
 
-function moveHeadToTarget()
+function stickToTarget()
     if targetPlayer then
         local targetCharacter = game.Players[targetPlayer].Character
         if targetCharacter then
             local direction = (targetCharacter.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Unit
             local rotation = CFrame.new(0, 0, 0) * CFrame.fromAxis(Vector3.new(0, 1, 0), math.atan2(direction.Z, direction.X))
-            camera.CFrame = camera.CFrame:lerp(rotation, headMovementSpeed)
+            camera.CFrame = camera.CFrame:lerp(rotation, 0.1) -- Adjust the lerp value for smoother rotation
+
+            -- Simulate sticking for 5 seconds
+            local startTime = tick()
+            while tick() - startTime <= stickDuration do
+                -- Keep the camera focused on the target
+                local distance = (targetCharacter.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
+                if distance > 10 then -- Adjust the distance threshold as needed
+                    camera.CFrame = camera.CFrame + direction * (distance - 10)
+                end
+                wait(0.01)
+            end
         end
     end
 end
@@ -35,5 +46,5 @@ button.MouseButton1Down:Connect(zoomIn)
 local button2 = script.Parent
 button2.MouseButton1Up:Connect(zoomOut)
 
--- To move the head towards the target player:
-game.Heartbeat:Connect(moveHeadToTarget)
+-- To stick to the target player:
+game.Heartbeat:Connect(stickToTarget)
